@@ -21,7 +21,7 @@
             <tr th:each="property : ${properties}">
                 <td th:text="${property.id}">1</td>
                 <td th:text="${property.name}">Casa Central</td>
-                <td th:text="${property.address.street}">Calle 123</td>
+                <td th:text="${property.street}">Calle 123</td>
                 <td th:text="${property.monthlyPrice}">500</td>
                 <td>
                     <span th:text="${property.status}" 
