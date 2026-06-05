@@ -21,8 +21,8 @@
         <tbody>
             <tr th:each="rental : ${rentals}">
                 <td th:text="${rental.id}">1</td>
-                <td th:text="${propertyService.getPropertyById(rental.propertyId).name}">Casa Central</td>
-                <td th:text="${tenantService.getTenantById(rental.tenantId).fullName}">Juan Pérez</td>
+                <td th:text="${propertyService.execute(rental.propertyId).name}">Casa Central</td>
+                <td th:text="${tenantService.execute(rental.tenantId).fullName}">Juan Pérez</td>
                 <td th:text="${rental.startDate}">2026-01-01</td>
                 <td th:text="${rental.endDate != null ? rental.endDate : '-'}">-</td>
                 <td>
