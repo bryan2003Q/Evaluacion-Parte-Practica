@@ -1,75 +1,99 @@
-# Sistema de Gestión de Propiedades - Rama Monolítico por Capas
+# Sistema de Gestión de Propiedades - Rama Código Espagueti
 
-Este proyecto es parte de una prueba académica de Arquitectura de Software y contiene la implementación del sistema utilizando la **Arquitectura Monolítica por Capas** (también conocida como N-Tier o arquitectura de 3 capas).
+Este proyecto es parte de una prueba académica de Arquitectura de Software y contiene la implementación del sistema utilizando la **Arquitectura de Código Espagueti**.
 
-## Enfoque Arquitectónico Utilizado
+## ¿Qué es el Código Espagueti?
 
-A diferencia de la rama de *Domain-Driven Design (DDD)* donde el código se agrupa por "contexto de negocio" (Propiedades, Arriendos), en la Arquitectura por Capas el código se organiza estrictamente por su **responsabilidad técnica horizontal**.
+El término "Código Espagueti" describe un estilo de programación donde **no existe ninguna separación de responsabilidades**. El código está tan enredado entre sí que, al intentar seguir el flujo del programa, se salta de un lugar a otro sin ninguna estructura clara, igual que intentar seguir un solo hilo en un plato de espagueti.
 
-Cada capa tiene un rol tecnológico específico y existe una regla estricta de dependencias: una capa superior solo puede comunicarse con la capa inmediatamente inferior. El flujo de información (y las dependencias de código) siempre va hacia abajo:
+En este estilo:
+- No hay capas definidas (ni Presentación, ni Servicio, ni Repositorio).
+- No hay módulos ni contextos de negocio separados.
+- La lógica de negocio, el acceso a la base de datos y la presentación HTTP conviven en el mismo lugar.
+- Todo lo que necesita la aplicación está escrito en el menor número de archivos posible.
 
-```text
-Capa de Presentación (Controllers) 
-         ↓
-Capa de Negocio (Services)
-         ↓
-Capa de Acceso a Datos (Repositories)
-         ↓
-Base de Datos (H2)
-```
+## Enfoque Utilizado: Un Solo Archivo
 
-### Características Fundamentales de nuestra implementación:
+El principio central de esta rama es que **toda la aplicación vive en un único archivo Java**: `MainController.java`.
 
-1. **El Modelo Anémico (Anti-patrón en DDD, estándar aquí)**: 
-   Las entidades en el paquete `model` (`Property`, `Tenant`, `Rental`) son simples contenedores de datos. Solo tienen atributos, getters y setters generados por Lombok. No tienen "inteligencia" ni lógica de negocio (no saben cómo ocuparse o liberarse por sí mismas).
-2. **Servicios Centralizados (Fat Services)**: 
-   Toda la "inteligencia" de la aplicación (las reglas de negocio) reside en las clases del paquete `service`. Por ejemplo, `RentalService` es quien tiene la responsabilidad de verificar si la propiedad está disponible, cambiar manualmente su estado y crear el arriendo. El modelo de datos es completamente pasivo.
-3. **Agrupación Técnica, no de Negocio**: 
-   Al abrir la carpeta `controller/`, verás controladores de propiedades, de inquilinos y de arriendos mezclados. La cohesión es técnica (todos son controladores), pero el aislamiento entre los módulos de negocio se pierde.
+Dentro de ese archivo, sin ninguna carpeta de organización, se encuentran definidas secuencialmente:
 
-## Estructura de Directorios Detallada
+1. Las **Entidades JPA** (`Property`, `Tenant`, `Rental`) que mapean las tablas de la base de datos.
+2. El **Enum de estado** (`PropertyStatus`) para los valores permitidos de una propiedad.
+3. Las **interfaces de Repositorio** (`PropertyRepo`, `TenantRepo`, `RentalRepo`) que permiten el acceso a H2.
+4. El **Controlador principal** (`MainController`) que maneja absolutamente todas las rutas HTTP del sistema.
+
+## Estructura de Archivos
 
 ```text
 src/main/java/com/practica/prueba
 ├── PruebaApplication.java
-│
-├── model/                         <-- Capa de Datos (Entidades Anémicas)
-│   ├── Property.java              (Solo atributos y getters/setters)
-│   ├── PropertyStatus.java
-│   ├── Tenant.java
-│   └── Rental.java
-│
-├── repository/                    <-- Capa de Acceso a Datos (Data Access Layer)
-│   ├── PropertyRepository.java    (Interfaces Spring Data JPA)
-│   ├── TenantRepository.java
-│   └── RentalRepository.java
-│
-├── service/                       <-- Capa de Lógica de Negocio (Business Layer)
-│   ├── PropertyService.java       (CRUD y operaciones simples)
-│   ├── TenantService.java
-│   └── RentalService.java         (Contiene las reglas fuertes de arrendamiento)
-│
-└── controller/                    <-- Capa de Presentación (Presentation Layer)
-    ├── DashboardController.java   (Orquesta vistas consolidadas)
-    ├── PropertyController.java    (Recibe peticiones HTTP, devuelve HTML)
-    ├── TenantController.java
-    └── RentalController.java
+└── MainController.java       <-- TODO EL SISTEMA AQUÍ
+    │
+    ├── class Property        (Entidad JPA)
+    ├── enum PropertyStatus   (Estados posibles)
+    ├── class Tenant          (Entidad JPA)
+    ├── class Rental          (Entidad JPA)
+    ├── interface PropertyRepo(Repositorio Spring Data)
+    ├── interface TenantRepo  (Repositorio Spring Data)
+    ├── interface RentalRepo  (Repositorio Spring Data)
+    │
+    └── class MainController  (Controlador único con TODAS las rutas)
+        ├── GET  /                    → Dashboard
+        ├── GET  /properties          → Listar propiedades
+        ├── POST /properties          → Crear propiedad
+        ├── GET  /properties/new      → Formulario nueva propiedad
+        ├── GET  /properties/{id}/edit→ Formulario editar propiedad
+        ├── POST /properties/{id}     → Actualizar propiedad
+        ├── GET  /tenants             → Listar inquilinos
+        ├── GET  /tenants/new         → Formulario nuevo inquilino
+        ├── POST /tenants             → Crear inquilino
+        ├── GET  /rentals             → Listar arriendos
+        ├── GET  /rentals/new         → Formulario nuevo arriendo
+        ├── POST /rentals             → Crear arriendo (con regla de negocio inline)
+        └── POST /rentals/{id}/finish → Finalizar arriendo (con regla inline)
 ```
 
-## Ejemplo del Flujo de Datos (Crear un Arriendo)
+## Cómo se Aplican las Reglas de Negocio
 
-Para entender cómo interactúan las capas de forma práctica, este es el "viaje" de los datos cuando un usuario decide arrendar una propiedad:
+En lugar de existir un Servicio o un Caso de Uso dedicado, las reglas de negocio están escritas **directamente dentro del método del controlador**. Por ejemplo, la regla *"solo se puede arrendar una propiedad disponible"* se verifica así, dentro del mismo método que recibe la petición HTTP:
 
-1. **Presentación:** El usuario envía un formulario HTML desde el navegador. El `RentalController` intercepta la petición HTTP `POST`.
-2. **Delegación:** El `Controller` no tiene permitido aplicar lógica de negocio, así que extrae los parámetros (ID de propiedad e ID de inquilino) y se los pasa al `RentalService`.
-3. **Reglas de Negocio:** El `RentalService` toma el control total:
-   - Consulta al `PropertyRepository` para obtener los datos de la propiedad desde la base de datos.
-   - Verifica la regla de negocio: *¿La propiedad está ocupada?* Si es así, interrumpe el flujo y lanza un error.
-   - Si está libre, el servicio modifica el estado de la propiedad llamando a `property.setStatus(OCCUPIED)`.
-   - Crea en memoria un nuevo objeto `Rental`.
-4. **Persistencia:** El `RentalService` invoca al `RentalRepository` y al `PropertyRepository` para guardar los cambios de forma transaccional en H2.
-5. **Respuesta:** El flujo vuelve hacia arriba al `Controller`, quien decide qué vista mostrar a continuación (una redirección a la lista de arriendos).
+```java
+@PostMapping("/rentals")
+public String createRental(@RequestParam Long propertyId, @RequestParam Long tenantId, Model model) {
+    // La regla de negocio está mezclada directamente aquí
+    Property p = propertyRepo.findById(propertyId).orElseThrow(...);
+    if (p.getStatus() == PropertyStatus.OCCUPIED) {
+        model.addAttribute("error", "La propiedad no está disponible.");
+        return "rentals/form";
+    }
+    p.setStatus(PropertyStatus.OCCUPIED);
+    propertyRepo.save(p);
+    rentalRepo.save(new Rental(propertyId, tenantId));
+    return "redirect:/rentals";
+}
+```
 
+No hay ninguna abstracción intermedia: el controlador consulta directamente el repositorio, aplica la regla y persiste los cambios en la misma función.
 
+## Ventajas y Desventajas
 
-S
+| Aspecto | Código Espagueti |
+|---|---|
+| **Velocidad inicial** | Muy rápida (todo en un lugar) |
+| **Curva de aprendizaje** | Muy baja (no hay abstracciones) |
+| **Mantenibilidad** | Muy mala (todo está acoplado) |
+| **Testabilidad** | Imposible (no se puede probar aisladamente) |
+| **Escalabilidad** | Nula (agregar funciones rompe todo) |
+| **Legibilidad a largo plazo** | Muy mala (el archivo crece sin control) |
+
+## Comparación entre las Tres Arquitecturas
+
+| | Código Espagueti | Monolítico por Capas | DDD |
+|---|---|---|---|
+| **Archivos Java** | 1 | ~15 | ~26 |
+| **Organización** | Ninguna | Por tipo técnico | Por contexto de negocio |
+| **Separación de responsabilidades** | No existe | Parcial | Estricta |
+| **Lógica de negocio en** | El controlador | El Service | La Entidad/Agregado |
+| **Facilidad de pruebas** | Nula | Media | Alta |
+| **Recomendado para** | Prototipos desechables | Proyectos académicos / CRUDs simples | Sistemas empresariales complejos |
