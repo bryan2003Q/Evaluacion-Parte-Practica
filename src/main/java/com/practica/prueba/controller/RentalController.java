@@ -22,6 +22,8 @@ public class RentalController {
         model.addAttribute("rentals", rentalService.getAllRentals());
         model.addAttribute("properties", propertyService.getAllProperties());
         model.addAttribute("tenants", tenantService.getAllTenants());
+        model.addAttribute("propertyService", propertyService);
+        model.addAttribute("tenantService", tenantService);
         return "rentals/list";
     }
 
