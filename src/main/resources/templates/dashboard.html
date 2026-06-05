@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html th:replace="~{layout :: layout('Dashboard', ~{::div})}">
+<div>
+    <h1>Dashboard Principal</h1>
+    
+    <div class="card-container">
+        <div class="card">
+            <h3>Total Propiedades</h3>
+            <div class="number" th:text="${totalProperties}">0</div>
+        </div>
+        <div class="card">
+            <h3>Disponibles</h3>
+            <div class="number" style="color: #28a745;" th:text="${availableProperties}">0</div>
+        </div>
+        <div class="card">
+            <h3>Ocupadas</h3>
+            <div class="number" style="color: #dc3545;" th:text="${occupiedProperties}">0</div>
+        </div>
+        <div class="card">
+            <h3>Arriendos Activos</h3>
+            <div class="number" style="color: #17a2b8;" th:text="${activeRentals}">0</div>
+        </div>
+    </div>
+</div>
+</html>

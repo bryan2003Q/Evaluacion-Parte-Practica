@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html th:replace="~{layout :: layout('Inquilinos', ~{::div})}">
+<div>
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h1>Inquilinos Registrados</h1>
+        <a th:href="@{/tenants/new}" class="btn btn-primary">Nuevo Inquilino</a>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nombre Completo</th>
+                <th>Email</th>
+                <th>Teléfono</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="tenant : ${tenants}">
+                <td th:text="${tenant.id}">1</td>
+                <td th:text="${tenant.fullName}">Juan Pérez</td>
+                <td th:text="${tenant.email}">juan@email.com</td>
+                <td th:text="${tenant.phone}">0999999999</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+</html>

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html th:replace="~{layout :: layout('Arriendos', ~{::div})}">
+<div>
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h1>Arriendos</h1>
+        <a th:href="@{/rentals/new}" class="btn btn-primary">Nuevo Arriendo</a>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Propiedad</th>
+                <th>Inquilino</th>
+                <th>Fecha Inicio</th>
+                <th>Fecha Fin</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="rental : ${rentals}">
+                <td th:text="${rental.id}">1</td>
+                <td th:text="${propertyService.getPropertyById(rental.propertyId).name}">Casa Central</td>
+                <td th:text="${tenantService.getTenantById(rental.tenantId).fullName}">Juan Pérez</td>
+                <td th:text="${rental.startDate}">2026-01-01</td>
+                <td th:text="${rental.endDate != null ? rental.endDate : '-'}">-</td>
+                <td>
+                    <span th:text="${rental.active ? 'ACTIVO' : 'FINALIZADO'}"
+                          th:style="${rental.active} ? 'color:green;font-weight:bold;' : 'color:gray;'">
+                    </span>
+                </td>
+                <td>
+                    <form th:if="${rental.active}" th:action="@{/rentals/{id}/finish(id=${rental.id})}" method="post" style="display:inline;">
+                        <button type="submit" class="btn btn-danger" onclick="return confirm('¿Está seguro de finalizar el arriendo? La propiedad quedará disponible nuevamente.')">Finalizar</button>
+                    </form>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+</html>

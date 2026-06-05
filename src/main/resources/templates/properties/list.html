@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html th:replace="~{layout :: layout('Propiedades', ~{::div})}">
+<div>
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h1>Propiedades Registradas</h1>
+        <a th:href="@{/properties/new}" class="btn btn-primary">Nueva Propiedad</a>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nombre</th>
+                <th>Dirección</th>
+                <th>Precio Mensual</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="property : ${properties}">
+                <td th:text="${property.id}">1</td>
+                <td th:text="${property.name}">Casa Central</td>
+                <td th:text="${property.address.street}">Calle 123</td>
+                <td th:text="${property.monthlyPrice}">500</td>
+                <td>
+                    <span th:text="${property.status}" 
+                          th:style="${property.status.name() == 'AVAILABLE'} ? 'color:green;font-weight:bold;' : 'color:red;font-weight:bold;'">
+                        AVAILABLE
+                    </span>
+                </td>
+                <td>
+                    <a th:href="@{/properties/{id}/edit(id=${property.id})}" class="btn" style="background-color: #ffc107; color: black;">Editar</a>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+</html>
